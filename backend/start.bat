@@ -1,0 +1,3 @@
+@echo off
+echo Starting Notes API server...
+npm start
