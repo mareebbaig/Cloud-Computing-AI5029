@@ -1,0 +1,13 @@
+# Terraform Variables File
+# Copy this to terraform.tfvars and fill in your values
+
+# Docker Hub credentials
+dockerhub_username = "your_docker_hub_username_here
+dockerhub_password = env("DOCKER_PASSWORD")
+
+# AWS Configuration
+aws_region = "us-east-1"
+instance_type = "t2.micro"
+
+# Optional: Override AMI if needed
+# ami_id = "ami-0ebfd941bbafe70c6"

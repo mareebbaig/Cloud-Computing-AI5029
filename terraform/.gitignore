@@ -1,0 +1,6 @@
+*.tfstate
+*.tfstate.*
+
+# Environment files with secrets
+.env
+.terraform/*
