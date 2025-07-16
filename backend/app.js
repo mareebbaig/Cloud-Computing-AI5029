@@ -135,7 +135,7 @@ app.post("/notes", async (req, res) => {
   }
 });
 
-// Root endpoint
+// Root endpoint for loadbalancer health check
 app.get("/", (req, res) => {
   res.json({
     message: "Welcome to Notes API",

@@ -1,9 +1,12 @@
 # Terraform Variables File
-# Copy this to terraform.tfvars and fill in your values
 
 # Docker Hub credentials
-dockerhub_username = "your_docker_hub_username_here
+dockerhub_username = "your_docker_hub_username_here"
+#set password in terminal and use 
 dockerhub_password = env("DOCKER_PASSWORD")
+#OR 
+#set TF_VAR_dockerhub_password in terminal
+
 
 # AWS Configuration
 aws_region = "us-east-1"
