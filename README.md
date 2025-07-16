@@ -2,6 +2,18 @@
 
 A Cloud Computing Course project that uses terraform to automate the infrastructure for a Notes Manager application with auto-scaling capabilities on AWS.
 
+## Group Information
+
+**Group Number:** CloudComp30
+
+**Group Members:**
+- Muhammad Areeb Baig
+- Hassan Zafar
+- 565708 - Farhan Fazal
+- 1565117 - Imran Fazal
+
+*This project was created by working together as a collaborative team effort.*
+
 ## Technologies Used
 
 - **Terraform** - Infrastructure as Code for AWS resource provisioning
@@ -21,42 +33,42 @@ A Cloud Computing Course project that uses terraform to automate the infrastruct
 - **AWS Account** with appropriate permissions
 - **AWS CLI** configured (optional but recommended)
 
+## Running Application
+
 ### Building Your Own Images (Recommended)
 
-If you want to make custom changes to the application:
+It is recommended to build your own images, our session might have expired
 
 1. **You must have Docker on your system**
 
-2. **Make a .env file** by studying the `.env.example` file and replace all the variables with actual values from your AWS account
-
-3. **Build the Docker images** of both backend and frontend directories:
+2. **Clone the Repository**
 ```bash
-# Build backend image
-cd backend
-docker build -t your-dockerhub-username/backend:tag .
-
-# Build frontend image
-cd frontend
-docker build -t your-dockerhub-username/frontend:tag .
+git clone https://github.com/mareebbaig/Cloud-Computing-AI5029.git
 ```
 
-4. **Push images to Docker registry** (DockerHub used here):
+3. **Make a .env file in backend folder** by studying the `.env.example` file and add all the variables with actual values from your AWS account
+
+4. **Build the Docker images** of both backend and frontend directories:
+```bash
+cd backend
+docker build -t your-dockerhub-username/backend:latest .
+
+cd frontend
+docker build -t your-dockerhub-username/frontend:latest .
+```
+
+5. **Push images to Docker registry** (DockerHub used here):
 ```bash
 docker push your-dockerhub-username/backend
 docker push your-dockerhub-username/frontend
 ```
 
-5. **Update Terraform configuration**: Change the image names in the `user_data` section in `main.tf` file so that Terraform can pull those images directly from DockerHub.
+### Cloud Infrastructure Deployment
 
-## Cloud Infrastructure Deployment
+1. **Update Terraform configuration**: Change the dockerhub username in the `dockerhub_username` section in `variables.tf` file so that Terraform can pull those images directly from DockerHub.
 
-### Step 1: Clone the Repository
-```bash
-git clone https://github.com/mareebbaig/Cloud-Computing-AI5029.git
-cd Cloud-Computing-AI5029
-```
 
-### Step 2: Setup Terraform Environment
+2. **Setup Terraform Environment**
 
 **Option A: Using AWS CLI**
 ```bash
@@ -68,37 +80,21 @@ aws configure
 ```bash
 export AWS_ACCESS_KEY_ID="your-access-key"
 export AWS_SECRET_ACCESS_KEY="your-secret-key"
-export AWS_DEFAULT_REGION="us-east-1"
+export AWS_SESSION_TOKEN="your-aws-session-token"
 ```
 
-### Step 3: Setup Terraform Variables
+3. **Initialize Terraform**
 ```bash
-cd terraform
-
-# Create environment file from example
-cp .env.example .env
-# Edit .env with your Docker Hub credentials and AWS details
-
-# OR create terraform.tfvars file
-cp terraform.tfvars.example terraform.tfvars
-# Edit terraform.tfvars with your values
-```
-
-### Step 4: Initialize Terraform
-```bash
-# Run terraform init command to setup and install all the required dependencies
 terraform init
 ```
 
-### Step 5: Verify Infrastructure
+4. **Verify Infrastructure**
 ```bash
-# Run terraform plan command to Verify your infrastructure
 terraform plan
 ```
 
-### Step 6: Deploy Infrastructure
+5. **Deploy Infrastructure**
 ```bash
-# Run terraform apply command to provision your infrastructure
 terraform apply
 ```
 
