@@ -2,7 +2,7 @@ provider "aws" {
   region = "us-east-1"
 }
 
-# data "aws_availability_zones" "available" {}
+data "aws_availability_zones" "available" {}
 
 variable "azs" {
   type    = list(string)
@@ -31,6 +31,21 @@ output "dynamodb_table_name" {
   value = aws_dynamodb_table.Notes.name
 }
 
+output "load_balancer_url" {
+  value = "http://${aws_lb.app.dns_name}"
+  description = "URL of the Application Load Balancer"
+}
+
+output "frontend_url" {
+  value = "http://${aws_lb.app.dns_name}"
+  description = "Frontend application URL"
+}
+
+output "backend_api_url" {
+  value = "http://${aws_lb.app.dns_name}/notes"
+  description = "Backend API URL for notes"
+}
+
 #VPC
 resource "aws_vpc" "main" {
   cidr_block = "10.0.0.0/16"
@@ -46,8 +61,8 @@ resource "aws_subnet" "main" {
   count                   = 2
   vpc_id                  = aws_vpc.main.id
   cidr_block              = "10.0.${count.index}.0/24"
-#   availability_zone       = element(data.aws_availability_zones.available.names, count.index)
-  availability_zone       = var.azs[count.index]
+  availability_zone       = element(data.aws_availability_zones.available.names, count.index)
+#   availability_zone       = var.azs[count.index]
   map_public_ip_on_launch = true
 }
 
@@ -110,6 +125,76 @@ resource "aws_security_group" "alb_sg" {
   }
 }
 
+resource "aws_lb" "app" {
+  name               = "app-alb"
+  load_balancer_type = "application"
+  security_groups    = [ aws_security_group.alb_sg.id ]       # reuse or create an ALB-specific SG
+  subnets            = aws_subnet.main[*].id                 # all public subnets
+
+  enable_deletion_protection = false
+}
+
+resource "aws_lb_target_group" "backend" {
+  name     = "tg-backend"
+  port     = 3000
+  protocol = "HTTP"
+  vpc_id   = aws_vpc.main.id
+
+  health_check {
+    path                = "/"       # or your health-check endpoint
+    protocol            = "HTTP"
+    matcher             = "200"     # expect HTTP 200
+    interval            = 30
+    healthy_threshold   = 3
+    unhealthy_threshold = 2
+  }
+}
+
+resource "aws_lb_target_group" "frontend" {
+  name     = "tg-frontend"
+  port     = 3001
+  protocol = "HTTP"
+  vpc_id   = aws_vpc.main.id
+
+  health_check {
+    path                = "/"
+    protocol            = "HTTP"
+    matcher             = "200"
+    interval            = 30
+    healthy_threshold   = 3
+    unhealthy_threshold = 2
+  }
+}
+
+resource "aws_lb_listener" "http" {
+  load_balancer_arn = aws_lb.app.arn
+  port              = 80
+  protocol          = "HTTP"
+
+  # Default action forwards to frontend
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.frontend.arn
+  }
+}
+
+# Listener rule to route /api/* to backend
+resource "aws_lb_listener_rule" "api" {
+  listener_arn = aws_lb_listener.http.arn
+  priority     = 100
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.backend.arn
+  }
+
+  condition {
+    path_pattern {
+      values = ["/api/*", "/notes*"]
+    }
+  }
+}
+
 
 # Launch Configuration
 resource "aws_launch_configuration" "api_launch_config" {
@@ -130,7 +215,7 @@ resource "aws_launch_configuration" "api_launch_config" {
     sudo docker pull ${var.dockerhub_username}/backend
     sudo docker pull ${var.dockerhub_username}/frontend
     sudo docker run -d -p 3000:3000 --name backend ${var.dockerhub_username}/backend
-    sudo docker run -d -p 3001:3001 --name frontend ${var.dockerhub_username}/frontend
+    sudo docker run -d -p 3001:3001 -e REACT_APP_API_URL=http://${aws_lb.app.dns_name} --name frontend ${var.dockerhub_username}/frontend
   EOF
 
   lifecycle {
@@ -148,6 +233,10 @@ resource "aws_autoscaling_group" "api_asg" {
   desired_capacity          = 1
   health_check_type         = "EC2"
   health_check_grace_period = 300
+  target_group_arns = [ 
+    aws_lb_target_group.backend.arn,
+    aws_lb_target_group.frontend.arn
+  ]
 
   tag {
     key                 = "Name"

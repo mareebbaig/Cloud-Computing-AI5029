@@ -8,7 +8,7 @@ variable "instance_type" {
 
 variable "ami_id" {
   description = "AMI ID for EC2 instances"
-  default     = "ami-020cba7c55df1f615"
+  default     = "ami-0150ccaf51ab55a51"
 }
 
 variable "dockerhub_username" {
