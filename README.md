@@ -7,10 +7,10 @@ A Cloud Computing Course project that uses terraform to automate the infrastruct
 **Group Number:** CloudComp30
 
 **Group Members:**
-- Muhammad Areeb Baig
-- Hassan Zafar
-- 565708 - Farhan Fazal
-- 1565117 - Imran Fazal
+- Muhammad Areeb Baig - 1563704
+- Hassan Zafar - 1568019
+- Farhan Fazal - 565708
+- Imran Fazal - 1565117
 
 *This project was created by working together as a collaborative team effort.*
 
